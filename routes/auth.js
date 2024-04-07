@@ -4,7 +4,9 @@
 */
 
 const {Router} = require('express');
-const {validateJWT} = require('../middlewares/validateJWT');
+const {
+    validateJWT,
+    validateLazyJWT} = require('../middlewares/validateJWT');
 const {
     createUser, 
     loginUser, 
@@ -21,7 +23,7 @@ const {checkCreateUser,
 const router = Router();
 
 // Crear usuario
-router.post('/new', validateJWT, checkCreateUser, createUser);
+router.post('/new', validateLazyJWT, checkCreateUser, createUser);
 
 // Login de usuario
 router.post('/', checkLoginUser, loginUser);

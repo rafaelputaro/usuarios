@@ -9,7 +9,7 @@ const MSG_USER_NOT_FOUND = 'No se encontró el usuario';
  * @param {rolesWithAccess} object  Roles que pueden tener acceso.
  * @returns Una función que chequea si el usuario tiene un rol que permita el acceso.
  */
-const createAccessRoleBased = (rolesWithAccess = []) => {
+const createAccessRoleBased = (superRole) => {
     return async (req, res = response, next) => {        
         let {role} = await User.findOne({_id: req.uid});
         if (!role){
@@ -18,7 +18,7 @@ const createAccessRoleBased = (rolesWithAccess = []) => {
                 msg: MSG_USER_NOT_FOUND
             });
         }        
-        if (!rolesWithAccess.includes(role)) {
+        if (role !== superRole) {
             return res.status(401).json({
                 ok: false,
                 msg: MSG_ACCESS_DENIED
@@ -35,8 +35,8 @@ const createAccessRoleBased = (rolesWithAccess = []) => {
  * que el id parámetros de la request sea distinto al del recuperado del usuario por medio del
  * token.
  */
-const createAccessRoleAndOwnerBased = (rolesWithAccess = []) => {
-    const checkAccessRoleBased = createAccessRoleBased(rolesWithAccess);
+const createAccessRoleAndOwnerBased = (superRole) => {
+    const checkAccessRoleBased = createAccessRoleBased(superRole);
     return async (req, res = response, next) => {        
         const {uid} = req;
         const {id} = req.params;
@@ -50,5 +50,5 @@ const createAccessRoleAndOwnerBased = (rolesWithAccess = []) => {
 
 module.exports = {
     createAccessRoleBased,
-    createAccessRoleAndOwnerBased
+    createAccessRoleAndOwnerBased,
 }

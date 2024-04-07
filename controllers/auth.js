@@ -12,7 +12,7 @@ const {
 const createUser = async (req, res = response) => {
     try {
         // Check en DB si ya existe el usuario
-        const {email, password} = req.body;
+        const {email, password, role} = req.body;
         let user = await User.findOne({email: email});
         if (user){
             return res.status(400).json({
@@ -32,7 +32,9 @@ const createUser = async (req, res = response) => {
             ok: true,
             uid: user.id,
             name: user.name,
-            token
+            email,
+            token,
+            role            
         });    
     } catch (error) {
         console.log(error);
@@ -143,7 +145,8 @@ const deleteUser = async (req, res = response) => {
 }
 
 const getUsers = async (req, res = response) => {
-    const users = await User.find().populate('store');
+    const users = await User.find();
+    //TODO: Dejar de mostrar password
     res.json({
         ok: true,
         users

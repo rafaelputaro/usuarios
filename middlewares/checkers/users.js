@@ -1,9 +1,8 @@
 const {check} = require('express-validator');
 const {ROLES, isRole} = require('../../types/role');
 const {validateFields} = require('../validateFields');
-const {
-    createAccessRoleBased, 
-    createAccessRoleAndOwnerBased} = require('../validateAccess');
+const User = require('../../models/Users');
+const {createAccessRoleAndOwnerBased} = require('../validateAccess');
 const {
     MSG_EMAIL_NOT_ENTERED,
     MSG_PASSWORD_NOT_ENTERED,
@@ -12,6 +11,8 @@ const {
     MSG_EMAIL_IS_REQUIRED,
     MSG_PASSWORD_ERROR_LENGTH,
     MSG_ROLE_ERROR_TYPE, 
+    MSG_WITHOUT_AUTH_TO_CREATE_ADMIN,
+    MSG_WITHOUT_AUTH_TO_CREATE_EXTRA_USER
 } = require('../../messages/auth');
 const {
     LENGTH_MIN_NAME,
@@ -19,10 +20,36 @@ const {
     REGEXP_NUMBERS_SYMBOLS_PASSWORD
 } = require('../../models/requirements/users');
 
-const ACCESS_GET_USERS = [ROLES.ADMINISTRATOR];
-const ACCESS_CREATE_USER = [ROLES.CLIENT];
-const ACCESS_UPDATE_USER = [ROLES.CLIENT, ROLES.ADMINISTRATOR];
-const ACCESS_DELETE_USER = [ROLES.CLIENT, ROLES.ADMINISTRATOR];
+/**
+ * @returns Un middleware que checkea los siguiente invariante según request:
+ * 1) Un usuario cliente no puede crear otros usuarios.
+ * 2) Un usuario sin token no puede crear una administrador.
+ */
+const checkPermissionOnCreateUser = () => {    
+    return async (req, res = response, next) => {     
+        if (req.token) {
+            // rol del usuario que hace la operación
+            let {role} = await User.findOne({_id: req.uid});
+            // un cliente no puede crear otro usuario
+            if (role === ROLES.CLIENT) {
+                return res.status(401).json({
+                    ok: false,
+                    msg: MSG_WITHOUT_AUTH_TO_CREATE_EXTRA_USER
+                });
+            }            
+        } else {
+            const roleNewUser = req.body.role;
+            // un usuario sin token no puede crear un administrador
+            if (roleNewUser === ROLES.ADMINISTRATOR) {
+                return res.status(401).json({
+                    ok: false,
+                    msg: MSG_WITHOUT_AUTH_TO_CREATE_ADMIN
+                })
+            }
+        }     
+        next();
+    }
+} 
 
 /**
 * @returns {object} Un arreglo de middlewares que checkean la longitud del nombre, la existencia de
@@ -35,9 +62,9 @@ const checkCreateUser = [
     check('email', MSG_EMAIL_IS_REQUIRED).isEmail(),
     check('password', MSG_PASSWORD_ERROR_LENGTH).isLength({ min: LENGTH_MIN_PASSWORD})
         .matches(REGEXP_NUMBERS_SYMBOLS_PASSWORD),
-    //check('role', MSG_ROLE_ERROR_TYPE).custom((role) => isRole(role)),
-    //createAccessRoleBased(ACCESS_CREATE_USER),    
-    //validateFields,
+    check('role', MSG_ROLE_ERROR_TYPE).custom((role) => isRole(role)),
+    checkPermissionOnCreateUser(),
+    validateFields,
 ];
 
 /**
@@ -48,13 +75,6 @@ const checkLoginUser = [
     check('password', MSG_PASSWORD_NOT_ENTERED).not().isEmpty(),
     validateFields
 ];
-
-/**
-* @returns {object} Un arreglo de middlewares que checkean el permiso se acceso a lectura de usuarios.
-*/
-const checkGetUsers = [
-    createAccessRoleBased(ACCESS_GET_USERS)
-]
 
 /**
 * @returns {object}  Un arreglo de middlewares que checkean la longitud del nombre, la existencia de
@@ -68,7 +88,7 @@ const checkUpdateUser = [
         .matches(REGEXP_NUMBERS_SYMBOLS_PASSWORD),
     check('role', MSG_ROLE_ERROR_TYPE).custom((role) => isRole(role)
     ),
-    createAccessRoleAndOwnerBased(ACCESS_UPDATE_USER),
+    createAccessRoleAndOwnerBased(ROLES.ADMINISTRATOR),
     validateFields
 ];
 
@@ -76,7 +96,7 @@ const checkUpdateUser = [
 * @returns {object} Un middleware que chequea el acceso.
 */
 const checkDeleteUser = [
-    createAccessRoleAndOwnerBased(ACCESS_DELETE_USER),
+    createAccessRoleAndOwnerBased(ROLES.ADMINISTRATOR),
     validateFields
 ];
 
@@ -91,7 +111,6 @@ const checkRevalidarToken = [
 
 module.exports = {
     checkCreateUser,
-    checkGetUsers,
     checkLoginUser,
     checkUpdateUser,
     checkDeleteUser,    
