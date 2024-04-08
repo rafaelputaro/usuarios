@@ -21,7 +21,7 @@ const {
 } = require('../../models/requirements/users');
 
 /**
- * @returns Un middleware que checkea los siguiente invariante según request:
+ * @returns Un middleware que checkea los siguiente invariante según el request:
  * 1) Un usuario cliente no puede crear otros usuarios.
  * 2) Un usuario sin token no puede crear una administrador.
  */
@@ -86,8 +86,7 @@ const checkUpdateUser = [
     check('email', MSG_EMAIL_IS_REQUIRED).optional().isEmail(),
     check('password', MSG_PASSWORD_ERROR_LENGTH).optional().isLength({ min: LENGTH_MIN_PASSWORD})
         .matches(REGEXP_NUMBERS_SYMBOLS_PASSWORD),
-    check('role', MSG_ROLE_ERROR_TYPE).custom((role) => isRole(role)
-    ),
+    check('role', MSG_ROLE_ERROR_TYPE).isEmpty(),
     createAccessRoleAndOwnerBased(ROLES.ADMINISTRATOR),
     validateFields
 ];
@@ -103,7 +102,7 @@ const checkDeleteUser = [
 /**
 * @returns {object} Un arreglo de middlewares que checkean la presencia de email y password.
 */
-const checkRevalidarToken = [
+const checkRevalidateToken = [
     check('email', MSG_EMAIL_NOT_ENTERED).isEmail(),
     check('password', MSG_PASSWORD_NOT_ENTERED).not().isEmpty(),
     validateFields
@@ -114,5 +113,5 @@ module.exports = {
     checkLoginUser,
     checkUpdateUser,
     checkDeleteUser,    
-    checkRevalidarToken
+    checkRevalidateToken
 }

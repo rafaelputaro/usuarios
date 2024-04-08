@@ -18,7 +18,7 @@ const {checkCreateUser,
     checkLoginUser,
     checkUpdateUser,
     checkDeleteUser,    
-    checkRevalidarToken} = require('../middlewares/checkers/users');
+    checkRevalidateToken} = require('../middlewares/checkers/users');
 
 const router = Router();
 
@@ -38,6 +38,6 @@ router.delete('/:id', validateJWT, checkDeleteUser, deleteUser);
 router.get('/', validateJWT, getUsers);
 
 // Revalidar token
-router.get('/renew', checkRevalidarToken, validateJWT, revalidateToken);
+router.get('/renew', checkRevalidateToken, validateJWT, revalidateToken);
 
 module.exports = router;
