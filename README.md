@@ -45,6 +45,12 @@ module.exports = model('User', UserSchema);
 
 Tener el archivo .env (pasado por privado) en la raíz del proyecto.
 
+```
+PORT = 4000
+DB_CNN=mongodb+srv://**********.mongodb.net/match
+SECRET_JWT_SEED=************************
+```
+
 # Ejecutar servidor:
 
 docker-compose up --build
