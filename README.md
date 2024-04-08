@@ -1,27 +1,51 @@
-# usuarios
-Usuario sin token:
+# Usuarios
+* Usuario sin token:
     Crear cliente.
-Usuario con token:
-    Rol cliente:
-        Eliminar su usuario.
-        Obtener usuarios.
-        Actualizar su usuario.
-    Rol administrador:
-        Puede crear y eliminar cualquier tipo de usuario.
-        Obtener usuarios.
-        Actualizar su usuario.
+* Usuario con token:
+    * Rol cliente:
+        * Eliminar su usuario.
+        * Obtener usuarios.
+        * Actualizar su usuario.
+    * Rol administrador:
+        * Puede crear y eliminar cualquier tipo de usuario.
+        * Obtener lista de usuarios.
+        * Actualizar su usuario.
 
-NOTA: Un usuario cliente no puede pasar a ser administrador y viceversa
+NOTA: Un usuario cliente no puede pasar a ser administrador y viceversa.
+
+# Base de datos:
+```
+const {Schema, model} = require('mongoose');
+
+const UserSchema = Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    role: {
+        type: String,
+        required: true
+    },
+});
+
+module.exports = model('User', UserSchema);
+```
+
 
 # Instrucciones:
 
-Crear el archivo ".env" en la raíz del proyecto con el siguiente contenido.
+Tener el archivo .env (pasado por privado) en la raíz del proyecto.
 
-PORT = 4000
-DB_CNN=mongodb+srv://rafaelputaro:LmkwPw5Y2Lgi!3M@cluster0.u58ehpr.mongodb.net/match
-SECRET_JWT_SEED=6158103a248014155002dd022d33fcb7@LmkwPw5Y2Lgi!3M
-
-Ejecutar:
+# Ejecutar servidor:
 
 docker-compose up --build
 
