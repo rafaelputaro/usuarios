@@ -13,8 +13,10 @@ const {
     updateUser, 
     deleteUser,
     getUsers, 
-    revalidateToken} = require('../controllers/auth');
-const {checkCreateUser,  
+    revalidateToken,
+    validateToken} = require('../controllers/auth');
+const {
+    checkCreateUser,  
     checkLoginUser,
     checkUpdateUser,
     checkDeleteUser,    
@@ -39,5 +41,8 @@ router.get('/', validateJWT, getUsers);
 
 // Revalidar token
 router.get('/renew', checkRevalidateToken, validateJWT, revalidateToken);
+
+// Check token
+router.get('/validate', validateJWT, validateToken);
 
 module.exports = router;

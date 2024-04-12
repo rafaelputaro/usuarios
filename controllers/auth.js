@@ -163,11 +163,18 @@ const revalidateToken = async (req, res = response) => {
     });
 }
 
+const validateToken = async (req, res = response) => {
+    res.status(200).json({
+        ok: true
+    });
+}
+
 module.exports = {
     createUser,
     loginUser,
     updateUser,
     deleteUser,
     getUsers,
-    revalidateToken
+    revalidateToken,
+    validateToken
 }
